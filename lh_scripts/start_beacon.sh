@@ -11,18 +11,16 @@ DOCKER=docker
 DOCKER_IMAGE=sigp/lighthouse:rayonism
 
 # Ensure necessary env vars are present.
-if [ -z "$TESTNET_NAME" ]; then
-    echo TESTNET_NAME is not set, exiting
-    exit 1
-fi
+TESTNET_NAME=steklo
 if [ -z "$1" ]; then
     echo The first argument must be \"$BINARY\" or \"$DOCKER\", exiting
     exit 1
 fi
 
 COMMON_LH_PARAMS="--testnet-deposit-contract-deploy-block 0 \
-    --testnet-genesis-state "$TESTNET_NAME/public/genesis.ssz" \
-    --testnet-yaml-config "$TESTNET_NAME/public/eth2_config.yaml" \
+    --testnet-genesis-state "/$TESTNET_NAME/genesis.ssz" \
+    --testnet-yaml-config "/$TESTNET_NAME/eth2_config.yaml" \
+    --testnet-boot-enr "/$TESTNET_NAME/bootnodes.yaml" \
     beacon_node \
     --staking"
 
@@ -39,6 +37,7 @@ if [ $1 = $DOCKER ]; then
     docker pull $DOCKER_IMAGE &&
     exec docker \
         run \
+	-d \
         --net host \
         --mount 'type=bind,source='$(pwd)'/'$TESTNET_NAME',target=/'$TESTNET_NAME \
         $DOCKER_IMAGE \

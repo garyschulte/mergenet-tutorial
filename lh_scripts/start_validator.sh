@@ -12,22 +12,18 @@ if [ -z "$TESTNET_NAME" ]; then
     echo TESTNET_NAME is not set, exiting
     exit 1
 fi
-if [ -z "$VALIDATOR_NODE_NAME" ]; then
-    echo VALIDATOR_NODE_NAME is not set, exiting
-    exit 1
-fi
 if [ -z "$1" ]; then
     echo The first argument must be \"$BINARY\" or \"$DOCKER\", exiting
     exit 1
 fi
 
 COMMON_LH_PARAMS="--testnet-deposit-contract-deploy-block 0 \
-    --testnet-genesis-state "$TESTNET_NAME/public/genesis.ssz" \
-    --testnet-yaml-config "$TESTNET_NAME/public/eth2_config.yaml" \
+    --testnet-genesis-state "$TESTNET_NAME/genesis.ssz" \
+    --testnet-yaml-config "$TESTNET_NAME/eth2_config.yaml" \
     validator_client \
     --init-slashing-protection \
-    --validators-dir "./$TESTNET_NAME/private/$VALIDATOR_NODE_NAME/keys" \
-    --secrets-dir "./$TESTNET_NAME/private/$VALIDATOR_NODE_NAME/secrets""
+    --validators-dir "./$TESTNET_NAME/keys" \
+    --secrets-dir "./$TESTNET_NAME/secrets""
 
 # Start Lighthouse using the binary available on $PATH.
 if [ $1 = $BINARY ]; then
@@ -42,6 +38,7 @@ if [ $1 = $DOCKER ]; then
     docker pull $DOCKER_IMAGE &&
     exec docker \
         run \
+	-d \
         --net host \
         --mount 'type=bind,source='$(pwd)'/'$TESTNET_NAME',target=/'$TESTNET_NAME \
         $DOCKER_IMAGE \
